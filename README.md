@@ -13,3 +13,7 @@ popd
 # Deploy the annotator
 serverless/deploy_cpu.sh serverless/pytorch/yolov7-coneslayer-cvat-annotator
 ```
+
+Demonstration
+-------------
+![Demo](/assets/screenshot.png)
