@@ -1,0 +1,54 @@
+metadata:
+  name: yolov7-coneslayer-redux
+  namespace: cvat
+  annotations:
+    name: Coneslayer (YOLOv7-Tiny)
+    type: detector
+    framework: pytorch
+    spec: |
+      [
+        {"id": 0, "name": "cone"}
+      ]
+spec:
+  description: yolov7-coneslayer-redux
+  runtime: 'python:3.10'
+  handler: main:handler
+  eventTimeout: 30s
+
+  build:
+    image: yolov7-coneslayer-redux
+    baseImage: ubuntu:22.04
+
+    directives:
+      preCopy:
+        - kind: ENV
+          value: DEBIAN_FRONTEND=noninteractive
+        - kind: RUN
+          value: apt-get update && apt-get -y install curl git python3 python3-pip 
+        - kind: RUN
+          value: apt-get -y install libgl1-mesa-glx libglib2.0-dev
+        - kind: WORKDIR
+          value: /opt/nuclio
+        - kind: ADD
+          value: https://github.com/mkrupczak3/Coneslayer/raw/main/coneslayer-redux/coneslayer-redux.pt coneslayer-redux.pt
+        - kind: RUN
+          value: pip3 install yolov7detect opencv-python numpy
+        - kind: RUN
+          value: ln -s /usr/bin/pip3 /usr/local/bin/pip
+        - kind: RUN
+          value: ln -s /usr/bin/python3 /usr/local/bin/python
+
+  triggers:
+    myHttpTrigger:
+      maxWorkers: 8
+      kind: 'http'
+      workerAvailabilityTimeoutMilliseconds: 10000
+      attributes:
+        maxRequestBodySize: 33554432 # 32MB
+
+  platform:
+    attributes:
+      restartPolicy:
+        name: always
+        maximumRetryCount: 3
+      mountMode: volume
